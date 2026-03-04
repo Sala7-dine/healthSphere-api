@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthsphere-api
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+      - MONGO_URI=${MONGO_URI}
+    env_file:
+      - .env
+    networks:
+      - healthsphere-network
+
+networks:
+  healthsphere-network:
+    driver: bridge

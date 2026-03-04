@@ -1,0 +1,541 @@
+{
+  "info": {
+    "name": "HealthSphere API",
+    "_postman_id": "healthsphere-api-collection",
+    "description": "Collection complète des endpoints de l'API HealthSphere – Exercises & Favorites",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "exercise_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "favorite_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Vérifie que l'API est opérationnelle"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Success true', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exercises",
+      "item": [
+        {
+          "name": "Get All Exercises",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"]
+            },
+            "description": "Récupère tous les exercices (sans filtre)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has data array', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "});",
+                  "pm.test('Save first exercise ID', () => {",
+                  "  const body = pm.response.json();",
+                  "  if (body.data && body.data.length > 0) {",
+                  "    pm.collectionVariables.set('exercise_id', body.data[0]._id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Exercises – Filter by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises?category=Strength",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"],
+              "query": [
+                { "key": "category", "value": "Strength" }
+              ]
+            },
+            "description": "Filtre les exercices par catégorie (Strength, Cardio, Flexibility, Balance, HIIT, Other)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Exercises – Filter by Difficulty",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises?difficulty=Beginner",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"],
+              "query": [
+                { "key": "difficulty", "value": "Beginner" }
+              ]
+            },
+            "description": "Filtre les exercices par difficulté (Beginner, Intermediate, Advanced)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Exercises – Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises?page=1&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "Pagination : page 1, 5 résultats par page"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Exercise by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises/{{exercise_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises", "{{exercise_id}}"]
+            },
+            "description": "Récupère un exercice par son ID (utilise la variable exercise_id)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Exercise",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Push-ups\",\n  \"category\": \"Strength\",\n  \"difficulty\": \"Beginner\",\n  \"description\": \"A classic upper-body exercise that targets the chest, triceps and shoulders.\",\n  \"duration\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"]
+            },
+            "description": "Crée un nouvel exercice. Les valeurs valides pour category : Strength, Cardio, Flexibility, Balance, HIIT, Other. Pour difficulty : Beginner, Intermediate, Advanced."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Save created exercise ID', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "  pm.collectionVariables.set('exercise_id', body.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Exercise – Cardio",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Running\",\n  \"category\": \"Cardio\",\n  \"difficulty\": \"Intermediate\",\n  \"description\": \"Outdoor or treadmill running to improve cardiovascular endurance.\",\n  \"duration\": 30\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"]
+            },
+            "description": "Crée un exercice de type Cardio"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Exercise – Advanced",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Muscle-up\",\n  \"category\": \"Strength\",\n  \"difficulty\": \"Advanced\",\n  \"description\": \"A compound movement combining a pull-up and a dip on a bar.\",\n  \"duration\": 15\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises"]
+            },
+            "description": "Crée un exercice de niveau Advanced"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Exercise",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Push-ups (Modified)\",\n  \"difficulty\": \"Intermediate\",\n  \"duration\": 15\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/exercises/{{exercise_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises", "{{exercise_id}}"]
+            },
+            "description": "Met à jour les champs d'un exercice existant"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Exercise updated', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Exercise",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises/{{exercise_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises", "{{exercise_id}}"]
+            },
+            "description": "Supprime un exercice par ID"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Exercise deleted', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "  pm.expect(body.message).to.include('deleted');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Exercise – Invalid ID (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/exercises/invalid-id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exercises", "invalid-id"]
+            },
+            "description": "Test d'erreur : ID invalide → doit retourner 400"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 for invalid ID', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "Get All Favorites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorites"]
+            },
+            "description": "Récupère tous les favoris avec les détails de l'exercice associé (populate)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has data array', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "});",
+                  "pm.test('Save first favorite ID', () => {",
+                  "  const body = pm.response.json();",
+                  "  if (body.data && body.data.length > 0) {",
+                  "    pm.collectionVariables.set('favorite_id', body.data[0]._id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Favorite",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exerciseId\": \"{{exercise_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorites"]
+            },
+            "description": "Ajoute un exercice aux favoris (utilise la variable exercise_id)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Save favorite ID', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "  pm.collectionVariables.set('favorite_id', body.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Favorite – Duplicate (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exerciseId\": \"{{exercise_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorites"]
+            },
+            "description": "Test d'erreur : ajouter un favori déjà existant → doit retourner 409"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 for duplicate favorite', () => pm.response.to.have.status(409));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Favorite – Exercise Not Found (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exerciseId\": \"000000000000000000000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorites"]
+            },
+            "description": "Test d'erreur : exerciseId inexistant → doit retourner 404"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 for unknown exercise', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Favorite",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/favorites/{{favorite_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorites", "{{favorite_id}}"]
+            },
+            "description": "Supprime un favori par son ID (utilise la variable favorite_id)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Favorite removed', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.success).to.be.true;",
+                  "  pm.expect(body.message).to.include('removed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Favorite – Invalid ID (400)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/favorites/invalid-id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorites", "invalid-id"]
+            },
+            "description": "Test d'erreur : ID invalide → doit retourner 400"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 for invalid ID', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
