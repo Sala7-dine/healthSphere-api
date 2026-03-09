@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 
+const authRoutes     = require('./routes/auth.routes');
 const exerciseRoutes = require('./routes/exercise.routes');
 const favoriteRoutes = require('./routes/favorite.routes');
-const errorHandler = require('./middleware/errorHandler');
+const sessionRoutes  = require('./routes/session.routes');
+const errorHandler   = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -18,8 +20,10 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth',      authRoutes);
 app.use('/api/exercises', exerciseRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/sessions',  sessionRoutes);
 
 // 404 handler
 app.use((req, res) => {
